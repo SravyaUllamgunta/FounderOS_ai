@@ -1,1 +1,14 @@
 .env
+.env.local
+.env.production
+node_modules/
+.next/
+__pycache__/
+*.pyc
+.venv/
+venv/
+*.log
+debug_output.txt
+verification_results.txt
+tsc_output.txt
+.gemini/

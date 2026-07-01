@@ -3,6 +3,8 @@ from qdrant_client.models import Distance, VectorParams, PointStruct
 from backend.utils.config import settings
 
 class QdrantTool:
+    _collections_ensured = False
+
     def __init__(self):
         self.client = QdrantClient(
             url=settings.QDRANT_URL,
@@ -13,6 +15,14 @@ class QdrantTool:
 
     def get_collection_name(self, name: str) -> str:
         return f"{self.prefix}_{name}"
+
+    def ensure_collections_once(self):
+        if not QdrantTool._collections_ensured:
+            try:
+                self.ensure_collections()
+                QdrantTool._collections_ensured = True
+            except Exception as e:
+                print(f"Warning: Deferring Qdrant collection verification due to: {e}")
 
     def ensure_collections(self):
         """Ensures that the required collections exist in Qdrant and have payload indexes for owner_id."""
@@ -47,6 +57,7 @@ class QdrantTool:
 
     def upsert_vector(self, collection: str, point_id: int, vector: list, payload: dict):
         """Upserts a vector point with metadata payload."""
+        self.ensure_collections_once()
         col_name = self.get_collection_name(collection)
         self.client.upsert(
             collection_name=col_name,
@@ -61,6 +72,7 @@ class QdrantTool:
 
     def search_vectors(self, collection: str, query_vector: list, limit: int = 5, filter_dict: dict = None):
         """Performs similarity search against a collection, with optional key-value payload filters using query_points."""
+        self.ensure_collections_once()
         col_name = self.get_collection_name(collection)
         
         qdrant_filter = None
@@ -86,6 +98,7 @@ class QdrantTool:
 
     def delete_vector(self, collection: str, point_id: int):
         """Removes a vector point by its ID."""
+        self.ensure_collections_once()
         col_name = self.get_collection_name(collection)
         self.client.delete(
             collection_name=col_name,

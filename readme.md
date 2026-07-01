@@ -28,18 +28,28 @@ graph TD
         Router --> Services
     end
 
-    subgraph LLM_Agent_Layer ["LangGraph & LLM Agent Layer"]
+    subgraph LLM_Agent_Layer ["LangGraph & 8 LLM Agents"]
         Graph["LangGraph Orchestrator"]
-        ExtractAgent["Extraction Agent (Gemini parsing)"]
-        RecAgent["Recommendation Agent (Action generation)"]
-        CommAgent["Communication Agent (Follow-up drafting)"]
-        ExplainAgent["Explanation Agent (Recommendation breakdown)"]
+        PlannerAgent["1. Planner Agent (Route selection & planning)"]
+        RetrievalAgent["2. Retrieval Agent (Context search query extractor)"]
+        ExtractAgent["3. Extraction Agent (Transcript metadata parser)"]
+        RecAgent["4. Recommendation Agent (Next best actions formulator)"]
+        CommAgent["5. Communication Agent (Follow-up email builder)"]
+        ExplainAgent["6. Explanation Agent (Recommendation explainer)"]
+        ScoringAgent["7. Scoring Agent (Match alignment grader)"]
+        MemoryAgent["8. Memory Agent (Objections/concerns/facts processor)"]
         
         Services --> Graph
+        Graph --> PlannerAgent
+        PlannerAgent --> Graph
+        
+        Graph --> RetrievalAgent
         Graph --> ExtractAgent
         Graph --> RecAgent
         Graph --> CommAgent
         Graph --> ExplainAgent
+        Graph --> ScoringAgent
+        Graph --> MemoryAgent
     end
 
     subgraph Data_Storage ["Data & Knowledge Storage"]
@@ -77,7 +87,7 @@ graph TD
     
     class UI,Hooks,API primary;
     class Router,Auth,Services secondary;
-    class Graph,ExtractAgent,RecAgent,CommAgent,ExplainAgent agent;
+    class Graph,PlannerAgent,RetrievalAgent,ExtractAgent,RecAgent,CommAgent,ExplainAgent,ScoringAgent,MemoryAgent agent;
     class PostgreSQL,Qdrant,SQL_Tables,Vector_Collections storage;
 ```
 
